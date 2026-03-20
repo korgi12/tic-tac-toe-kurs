@@ -1,22 +1,9 @@
 package org.example;
 
-import java.io.IOException;
-
 public class Main {
-    public static void main(String[] args) throws IOException {
-        if (args.length == 0) {
-            printUsage();
-            return;
-        }
-
-        switch (args[0].toLowerCase()) {
-            case "server" -> new TicTacToeServer().start();
-            case "client" -> new TicTacToeClient().start();
-            default -> printUsage();
-        }
-    }
-
-    private static void printUsage() {
-        System.out.println("Usage: java -jar TicTacToe.jar <server|client>");
+    public static void main(String[] args) {
+        System.out.println("Запускайте приложение через отдельные классы:");
+        System.out.println("  server: org.example.ServerMain");
+        System.out.println("  client: org.example.ClientMain");
     }
 }
