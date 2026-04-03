@@ -1,9 +1,11 @@
 package org.example;
 
-import java.io.IOException;
+import org.example.client.TicTacToeClient;
+
+import javax.swing.SwingUtilities;
 
 public class ClientMain {
-    public static void main(String[] args) throws IOException {
-        new TicTacToeClient().start();
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new TicTacToeClient().start());
     }
 }

@@ -1,7 +1,8 @@
-package org.example;
+package org.example.server;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class GameSession {
     public static final char EMPTY = '.';
@@ -28,50 +29,54 @@ public class GameSession {
 
     public MoveResult playerMove(int row, int col) {
         if (!isInside(row, col)) {
-            return MoveResult.error("Координаты вне поля.", boardAsLines(), null, null, null);
+            return MoveResult.error("Координаты вне границ поля.", boardAsLines());
         }
         if (board[row][col] != EMPTY) {
-            return MoveResult.error("Клетка уже занята.", boardAsLines(), null, null, null);
+            return MoveResult.error("Эта клетка уже занята.", boardAsLines());
         }
 
         board[row][col] = PLAYER;
-
-        if (!isBoardFull()) {
-            computerMove();
-        }
-
         if (isBoardFull()) {
-            int playerMax = findLongestChain(PLAYER);
-            int computerMax = findLongestChain(COMPUTER);
-            String result = determineWinner(playerMax, computerMax);
-            return MoveResult.finished(
-                    "Игра завершена.",
-                    boardAsLines(),
-                    playerMax,
-                    computerMax,
-                    result
-            );
+            return finishGame();
         }
 
-        return MoveResult.ok("Ход выполнен.", boardAsLines(), null, null, null);
+        computerMove();
+        if (isBoardFull()) {
+            return finishGame();
+        }
+
+        return MoveResult.ok("Ход выполнен.", boardAsLines());
+    }
+
+    private MoveResult finishGame() {
+        int playerMax = findLongestChain(PLAYER);
+        int computerMax = findLongestChain(COMPUTER);
+        String result = determineWinner(playerMax, computerMax);
+        return MoveResult.finished("Игра завершена.", boardAsLines(), playerMax, computerMax, result);
     }
 
     private void computerMove() {
+        List<int[]> emptyCells = new ArrayList<>();
         for (int row = 0; row < size; row++) {
             for (int col = 0; col < size; col++) {
                 if (board[row][col] == EMPTY) {
-                    board[row][col] = COMPUTER;
-                    return;
+                    emptyCells.add(new int[]{row, col});
                 }
             }
         }
+        if (emptyCells.isEmpty()) {
+            return;
+        }
+
+        int[] selectedCell = emptyCells.get(ThreadLocalRandom.current().nextInt(emptyCells.size()));
+        board[selectedCell[0]][selectedCell[1]] = COMPUTER;
     }
 
     private boolean isInside(int row, int col) {
         return row >= 0 && row < size && col >= 0 && col < size;
     }
 
-    public boolean isBoardFull() {
+    private boolean isBoardFull() {
         for (int row = 0; row < size; row++) {
             for (int col = 0; col < size; col++) {
                 if (board[row][col] == EMPTY) {
@@ -90,7 +95,7 @@ public class GameSession {
         return lines;
     }
 
-    public int findLongestChain(char symbol) {
+    private int findLongestChain(char symbol) {
         int longest = 0;
         int[][] directions = {{0, 1}, {1, 0}, {1, 1}, {1, -1}};
 
@@ -99,13 +104,13 @@ public class GameSession {
                 if (board[row][col] != symbol) {
                     continue;
                 }
+
                 for (int[] direction : directions) {
-                    int length = countChain(row, col, direction[0], direction[1], symbol);
-                    longest = Math.max(longest, length);
+                    int currentLength = countChain(row, col, direction[0], direction[1], symbol);
+                    longest = Math.max(longest, currentLength);
                 }
             }
         }
-
         return longest;
     }
 

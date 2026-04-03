@@ -1,9 +1,9 @@
 package org.example;
 
-import java.io.IOException;
+import org.example.server.TicTacToeServer;
 
 public class ServerMain {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         new TicTacToeServer().start();
     }
 }
